@@ -121,10 +121,9 @@ func (sh *secretHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.Error()))
 		return
 	}
-
 	list := make([]secret, 0, len(files))
 	for _, file := range files {
-		if !file.IsDir() {
+		if file.IsDir() {
 			continue
 		}
 		filepath := path.Join(dir, file.Name())
@@ -133,12 +132,12 @@ func (sh *secretHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		list = append(list, secret{file.Name(), string(contents)})
+	}
 
-		table := secretTable{"Secrets", list}
-		t := template.Must(template.ParseFiles("templates/secrets.tmpl"))
-		err = t.Execute(w, table)
-		if err != nil {
-			panic(err)
-		}
+	table := secretTable{"Secrets", list}
+	t := template.Must(template.ParseFiles("templates/secrets.tmpl"))
+	err = t.Execute(w, table)
+	if err != nil {
+		panic(err)
 	}
 }
