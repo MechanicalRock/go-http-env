@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -51,6 +52,7 @@ func setup() (*http.Server, error) {
 
 	mux.Handle("/env", &envHandler{})
 	mux.Handle("/secrets", &secretHandler{})
+	mux.Handle("/", &defaultHandler{})
 
 	server := &http.Server{Addr: addr, Handler: mux}
 	return server, nil
@@ -60,6 +62,14 @@ type server struct{}
 
 func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
+}
+
+type defaultHandler struct{}
+
+func (dh *defaultHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(os.Stdout, "Received request for %s\n", r.URL)
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprint(w, "OK")
 }
 
 type envHandler struct{}
@@ -74,6 +84,7 @@ type envTable struct {
 }
 
 func (eh *envHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(os.Stdout, "Received request for %s\n", r.URL)
 	envVars := os.Environ()
 	list := make([]entry, 0, len(envVars))
 	for _, envVar := range envVars {
@@ -103,6 +114,7 @@ type secret struct {
 }
 
 func (sh *secretHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(os.Stdout, "Received request for %s\n", r.URL)
 	dir := "/etc/secrets"
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -128,7 +140,5 @@ func (sh *secretHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-
 	}
-
 }

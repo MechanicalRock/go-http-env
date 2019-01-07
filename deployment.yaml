@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: special-config
+  namespace: demo
+data:
+  K8S_CONFIG_MAP_VAR_ONE: value_one
+  K8S_CONFIG_MAP_VAR_TWO: value_two
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-http-env 
+  namespace: demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: go-http-env-deployment
+  template:
+    metadata:
+      labels:
+        app: go-http-env-deployment
+    spec:
+      containers:
+      - name: go-http-env
+        image: gcr.io/schnauzer-163208/go-http-env
+        ports:
+        - containerPort: 8080
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+        env:
+          - name: K8S_POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: K8S_NODE_NAME
+            valueFrom:
+              fieldRef:
+                  fieldPath: spec.nodeName
+          - name: K8S_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        envFrom:
+          - configMapRef:
+              name: special-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: myservice
+  namespace: demo
+spec:
+  type: LoadBalancer
+  selector:
+    app: go-http-env-deployment
+  ports:
+  - name: web
+    protocol: TCP
+    port: 8080
