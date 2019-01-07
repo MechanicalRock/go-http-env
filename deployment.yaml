@@ -7,6 +7,15 @@ data:
   K8S_CONFIG_MAP_VAR_ONE: value_one
   K8S_CONFIG_MAP_VAR_TWO: value_two
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+  namespace: demo
+data:
+  username: YWRtaW5fdXNlcg==
+  password: YWRtaW5fcGFzc3dvcmQ=
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,6 +31,10 @@ spec:
       labels:
         app: go-http-env-deployment
     spec:
+      volumes:
+      - name: my-secret-volume
+        secret:
+          secretName: mysecret
       containers:
       - name: go-http-env
         image: gcr.io/schnauzer-163208/go-http-env
@@ -31,6 +44,10 @@ spec:
           limits:
             cpu: 100m
             memory: 128Mi
+        volumeMounts:
+        - name: my-secret-volume
+          mountPath: "/etc/secrets"
+          readOnly: true
         env:
           - name: K8S_POD_NAME
             valueFrom:
