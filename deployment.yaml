@@ -37,7 +37,7 @@ spec:
           secretName: mysecret
       containers:
       - name: go-http-env
-        image: gcr.io/schnauzer-163208/go-http-env
+        image: gcr.io/schnauzer-163208/go-http-env:latest
         ports:
         - containerPort: 8080
         resources:
