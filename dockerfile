@@ -1,6 +1,6 @@
 # STEP 1 build executable binary
 
-FROM golang:1.18-alpine AS build_base
+FROM golang:1.20.3-alpine AS build_base
 
 # Install git
 RUN apk update && apk add git && apk add ca-certificates
@@ -27,7 +27,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-w -s' -o /go/bi
 # STEP 2 build a small image
 
 # start from scratch
-FROM golang:1.18-alpine
+FROM golang:1.20.3-alpine
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /etc/passwd /etc/passwd
